@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
+
 [RequireComponent(typeof(NavMeshAgent))]
 public class StalkerBot : MonoBehaviour
 {
@@ -9,9 +11,13 @@ public class StalkerBot : MonoBehaviour
     [SerializeField] private float viewDistance;
     [SerializeField] private string findObjectTag;
 
+    [SerializeField] private float actionDelay;
+    public UnityEvent ActionWhenSee;
+
     private Vector3 targetPosition;
     private NavMeshAgent agent;
     private bool isSeeTarget;
+    private float timer;
 
     private void Awake()
     {
@@ -25,7 +31,9 @@ public class StalkerBot : MonoBehaviour
 
     private void Update()
     {
-        if(Vector3.Distance(transform.position, target.position) <= viewDistance)
+        timer += Time.deltaTime;
+
+        if (Vector3.Distance(transform.position, target.position) <= viewDistance)
         {
             RaycastHit[] hits = Physics.RaycastAll(transform.position, (target.position - transform.position).normalized);
 
@@ -38,7 +46,16 @@ public class StalkerBot : MonoBehaviour
             }
 
             if (isSeeTarget == true)
+            {
                 targetPosition = target.position;
+
+                if(timer >= actionDelay)
+                {
+                    if (ActionWhenSee != null) ActionWhenSee.Invoke();
+
+                    timer = 0;
+                }
+            }
         }
 
         agent.SetDestination(targetPosition);

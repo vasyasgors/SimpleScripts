@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 namespace SimpleScripts
 {
-    public class ActiveSwitcher : MonoBehaviour
+    public class Switchable : MonoBehaviour
     {
         public UnityEvent OnActive;
         public UnityEvent OnDeactive;

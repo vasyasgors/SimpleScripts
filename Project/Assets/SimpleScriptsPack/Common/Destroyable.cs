@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SimpleScripts
 {
-	public class Destroyer : MonoBehaviour
+	public class Destroyable : MonoBehaviour
 	{
 		public enum DestroyMode
         {
@@ -12,7 +12,7 @@ namespace SimpleScripts
 			Invoke
         }
 
-		[SerializeField] private DestroyMode mode;
+		[SerializeField] private DestroyMode mode = DestroyMode.Invoke;
         [SerializeField] private float delay;
 
 		void Start()

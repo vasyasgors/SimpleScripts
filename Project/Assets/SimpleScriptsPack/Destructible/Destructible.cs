@@ -9,21 +9,26 @@ namespace SimpleScripts
     {
         [SerializeField] private int maxHitPoints;
 
-        public UnityEvent Die;
-        public UnityEvent ChangeHitPoints;
+        [SerializeField] private EventHandler died;
+        [SerializeField] private EventHandler changedHitPoints;
+
+
+        public UnityAction Died;
+        public UnityAction ChangedHitPoints;
+
         private int hitPoints;
 
         private void Start()
         {
             hitPoints = maxHitPoints;
-            ChangeHitPoints.Invoke();
+            changedHitPoints.ForcedInvoke();
         }
 
         public void ApplyDamage(int damage)
         {
             hitPoints -= damage;
 
-            ChangeHitPoints.Invoke();
+            changedHitPoints.ForcedInvoke();
 
             if (hitPoints <= 0)
             {
@@ -35,8 +40,8 @@ namespace SimpleScripts
         {
             hitPoints = 0;
 
-            ChangeHitPoints.Invoke();
-            Die.Invoke();
+            changedHitPoints.ForcedInvoke();
+            died.ForcedInvoke();
         }
 
         public int GetHitPoints()

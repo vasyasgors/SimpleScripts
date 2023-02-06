@@ -12,12 +12,12 @@ namespace SimpleScripts
 
         private void Start()
         {
-            destructible.ChangeHitPoints.AddListener(OnChangeHitPoints);
+          //  destructible.ChangedHitPoints.AddListener(OnChangeHitPoints);
         }
 
         private void OnDestroy()
         {
-            destructible.ChangeHitPoints.RemoveListener(OnChangeHitPoints);
+           // destructible.ChangedHitPoints.RemoveListener(OnChangeHitPoints);
         }
 
         private void OnChangeHitPoints()

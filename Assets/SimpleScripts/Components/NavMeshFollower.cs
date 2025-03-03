@@ -7,11 +7,25 @@ using UnityEngine.Events;
 [RequireComponent(typeof(NavMeshAgent))]
 public class NavMeshFollower : MonoBehaviour
 {
-    [SerializeField] private Transform target;
+    public enum PatrolType
+    {
+        Circle,
+        Random
+    }
+    [Header("Path")]
+    [SerializeField] private PatrolType patrolType;
+    [SerializeField] private Transform[] pathPoints;
+    [SerializeField] private float distanceReachingTarget = 1;
+
+    [Header("View")]
     [SerializeField] private float viewDistance;
+
+    [Header("Target")]
+    [SerializeField] private Transform target;
     [SerializeField] private string findObjectTag = "Player";
     [SerializeField] private bool FindTargetOnStart;
 
+    [Header("Action")]
     [SerializeField] private float actionDelay;
     public UnityEvent ActionWhenSee;
 
@@ -19,6 +33,7 @@ public class NavMeshFollower : MonoBehaviour
     private NavMeshAgent agent;
     private bool isSeeTarget;
     private float timer;
+    private int pathIndex = 0;
 
     private void Awake()
     {
@@ -28,33 +43,76 @@ public class NavMeshFollower : MonoBehaviour
             target = GameObject.FindGameObjectWithTag(findObjectTag).transform;
 
         targetPosition = transform.position;
+
+        if (patrolType == PatrolType.Random)
+        {
+            targetPosition = pathPoints[Random.Range(0, pathPoints.Length)].position;
+        }
+
+
+        if (patrolType == PatrolType.Circle)
+        {
+            targetPosition = pathPoints[0].position;
+            pathIndex = 0;
+        }
+
     }
 
     private void Update()
     {
         timer += Time.deltaTime;
 
+        isSeeTarget = false;
+
         if (Vector3.Distance(transform.position, target.position) <= viewDistance)
         {
-            RaycastHit[] hits = Physics.RaycastAll(transform.position, (target.position - transform.position).normalized);
+            
+            RaycastHit raycastHit;
 
-            isSeeTarget = true;
-
-            for(int i = 0; i < hits.Length; i++)
+            if (Physics.Raycast(transform.position, (target.position - transform.position).normalized, out raycastHit, viewDistance))
             {
-                if (hits[i].transform != target)
-                    isSeeTarget = false;
+                if (raycastHit.collider.transform.root == target.root)
+                    isSeeTarget = true;
             }
 
             if (isSeeTarget == true)
             {
                 targetPosition = target.position;
 
-                if(timer >= actionDelay)
+                if (timer >= actionDelay)
                 {
                     if (ActionWhenSee != null) ActionWhenSee.Invoke();
 
                     timer = 0;
+                }
+            }
+
+           
+        }
+
+        if (isSeeTarget == false)
+        {
+            if (pathPoints != null)
+            {
+                if(patrolType == PatrolType.Random)
+                {
+                    if (Vector3.Distance(transform.position, targetPosition) <= distanceReachingTarget)
+                    {
+                        targetPosition = pathPoints[Random.Range(0, pathPoints.Length)].position;
+                    }
+                }
+
+                if (patrolType == PatrolType.Circle)
+                {
+                    if (Vector3.Distance(transform.position, targetPosition) <= distanceReachingTarget)
+                    {
+                        pathIndex += 1;
+
+                        if (pathIndex >= pathPoints.Length)
+                            pathIndex = 0;
+
+                        targetPosition = pathPoints[pathIndex].position;
+                    }
                 }
             }
         }
@@ -73,7 +131,7 @@ public class NavMeshFollower : MonoBehaviour
 
         Gizmos.color = Color.yellow;
 
-        Gizmos.DrawLine(transform.position, targetPosition);
+        Gizmos.DrawLine(transform.position + new Vector3(0, 1, 0), targetPosition);
         Gizmos.DrawCube(targetPosition, new Vector3(0.3f, 0.3f, 0.3f));
     }
 
